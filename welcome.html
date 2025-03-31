@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Diary - Welcome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* [All your existing CSS remains exactly the same] */
+        /* ... all your existing styles ... */
+:root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --danger-color: #dc3545;
+            --danger-hover: #bb2d3b;
+            --text-color: #333;
+            --light-text: #666;
+            --border-color: #ddd;
+            --background-light: #f8f9fa;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff, #d9e2ff);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .welcome-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border-radius: 15px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .welcome-container h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .welcome-container p {
+            color: var(--light-text);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .welcome-container input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .welcome-container input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        .welcome-container button {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .welcome-container button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .welcome-message {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .pin-input {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .pin-input input {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .pin-input input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            margin-top: 10px;
+            font-size: 14px;
+            height: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- [All your HTML remains exactly the same] -->
+    <!-- ... all your existing HTML ... -->
+
+<div class="welcome-container">
+        <div id="name-entry">
+            <h1><i class="fas fa-book"></i> Digital Diary</h1>
+            <p>Your personal space for thoughts and memories</p>
+            <input type="text" id="user-name" placeholder="Enter your name" required>
+            <button onclick="saveUserName()">
+                <i class="fas fa-arrow-right"></i> Continue
+            </button>
+        </div>
+
+        <div id="pin-entry" style="display: none;">
+            <div class="welcome-message" id="welcome-user"></div>
+            <p>Enter your 4-digit passcode to continue</p>
+            <div class="pin-input">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric" class="pin-digit">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric" class="pin-digit">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric" class="pin-digit">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric" class="pin-digit">
+            </div>
+            <div class="error-message" id="pin-error"></div>
+            <button onclick="verifyPin()">
+                <i class="fas fa-lock-open"></i> Unlock Diary
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Cloudinary configuration
+        const cloudinaryConfig = {
+            cloudName: 'YOUR_CLOUD_NAME', // Replace with your Cloudinary cloud name
+            apiKey: 'YOUR_API_KEY' // Optional: Only if you need client-side uploads
+        };
+
+        // Correct passcode
+        const CORRECT_PIN = "7088";
+        
+        // Initialize the app
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if user name is already saved
+            const userName = localStorage.getItem('diaryUserName');
+            if (userName) {
+                showPinEntry(userName);
+            }
+            
+            // Set up PIN input auto-focus
+            setupPinInput();
+            
+            // Allow pressing Enter in name field
+            document.getElementById('user-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveUserName();
+                }
+            });
+            
+            // Allow pressing Enter in PIN fields
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            pinDigits[pinDigits.length - 1].addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPin();
+                }
+            });
+        });
+        
+        // [All remaining functions stay exactly the same]
+        /* ... rest of your existing JavaScript code ... */
+function saveUserName() {
+            const userNameInput = document.getElementById('user-name');
+            const userName = userNameInput.value.trim();
+            
+            if (!userName) {
+                userNameInput.focus();
+                document.getElementById('pin-error').textContent = 'Please enter your name';
+                return;
+            }
+            
+            localStorage.setItem('diaryUserName', userName);
+            showPinEntry(userName);
+        }
+        
+        function showPinEntry(userName) {
+            document.getElementById('name-entry').style.display = 'none';
+            document.getElementById('pin-entry').style.display = 'block';
+            document.getElementById('welcome-user').textContent = `Welcome, ${userName}!`;
+            
+            // Clear any previous PIN inputs
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            pinDigits.forEach(digit => digit.value = '');
+            document.getElementById('pin-error').textContent = '';
+            
+            // Focus first PIN digit
+            pinDigits[0].focus();
+        }
+        
+        function setupPinInput() {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            
+            pinDigits.forEach((digit, index) => {
+                digit.addEventListener('input', function() {
+                    if (this.value.length === 1) {
+                        if (index < pinDigits.length - 1) {
+                            pinDigits[index + 1].focus();
+                        }
+                    }
+                });
+                
+                digit.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                        pinDigits[index - 1].focus();
+                    }
+                });
+            });
+        }
+        
+        function verifyPin() {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            let enteredPin = '';
+            
+            pinDigits.forEach(digit => {
+                enteredPin += digit.value;
+            });
+            
+            if (enteredPin.length !== 4) {
+                document.getElementById('pin-error').textContent = 'Please enter a 4-digit code';
+                return;
+            }
+            
+            if (enteredPin === CORRECT_PIN) {
+                // Redirect to main app page after successful authentication
+                window.location.href = "diary-app.html"; // Change this to your main app file
+            } else {
+                document.getElementById('pin-error').textContent = 'Incorrect passcode. Please try again.';
+                // Clear the PIN inputs
+                pinDigits.forEach(digit => digit.value = '');
+                pinDigits[0].focus();
+                
+                // Add shake animation for wrong PIN
+                document.getElementById('pin-entry').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('pin-entry').classList.remove('shake');
+                }, 500);
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termux Diary App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --danger-color: #dc3545;
+            --danger-hover: #bb2d3b;
+            --warning-color: #ffdd57;
+            --text-color: #333;
+            --light-text: #666;
+            --border-color: #ddd;
+            --background-light: #f8f9fa;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff, #d9e2ff);
+            margin: 0;
+            padding-bottom: 80px;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-radius: 12px;
+            text-align: left;
+            position: relative;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        input, textarea {
+            width: calc(100% - 20px);
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s ease-in-out;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        textarea {
+            height: 150px;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: all 0.3s ease-in-out;
+            margin-top: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        input[type="file"] {
+            background: #eef3ff;
+            border: 1px dashed var(--primary-color);
+            padding: 10px;
+            display: block;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        input[type="file"]:hover {
+            background: #dde7ff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--primary-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .menu-bar button {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+        }
+
+        .menu-bar button i {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+
+        .menu-bar button:hover {
+            color: var(--warning-color);
+            transform: translateY(-3px);
+        }
+
+        .menu-bar button.active {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .active-section {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .entry {
+            position: relative;
+            cursor: pointer;
+            background: #fff;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+
+        .entry:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .entry img, .entry video {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .entry-title {
+            font-weight: 600;
+            margin: 8px 0 5px;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(220, 53, 69, 0.85);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+        }
+
+        .entry:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: var(--danger-hover);
+            transform: scale(1.1);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .enlarged-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            width: 800px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .enlarged-header {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .enlarged-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .enlarged-date {
+            font-size: 14px;
+            color: var(--light-text);
+        }
+
+        .enlarged-media-content {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .enlarged-media {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Video specific styles */
+        .enlarged-media.video-element {
+            background-color: #000;
+            width: 100%;
+            height: auto;
+        }
+
+        .enlarged-content {
+            width: 100%;
+            text-align: left;
+            padding: 0 10px;
+            margin-top: 20px;
+        }
+
+        .enlarged-content p {
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .close-btn:hover {
+            background: var(--danger-hover);
+            transform: scale(1.1);
+        }
+
+        .close-btn i {
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--light-text);
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: var(--border-color);
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .date-display {
+            font-size: 14px;
+            color: var(--light-text);
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn-logout {
+            background: #6c757d;
+            margin-top: 30px;
+        }
+
+        .btn-logout:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 15px auto;
+                padding: 15px;
+            }
+            
+            .enlarged-container {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .enlarged-media {
+                max-height: 50vh;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .menu-bar button {
+                font-size: 14px;
+                padding: 8px 5px;
+            }
+            
+            .menu-bar button i {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            button {
+                font-size: 16px;
+                padding: 10px;
+            }
+            
+            .enlarged-container {
+                padding: 15px;
+            }
+            
+            .enlarged-media {
+                max-height: 40vh;
+            }
+
+            .enlarged-header h3 {
+                font-size: 20px;
+            }
+
+            .enlarged-content p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="home" class="container active-section">
+        <h1>📖 My Digital Diary</h1>
+        <p style="text-align: center; color: var(--light-text);">Capture your thoughts, moments, and memories.</p>
+        
+        <div class="date-display" id="current-date"></div>
+        
+        <label for="title"><b>Entry Title</b></label>
+        <input type="text" id="title" placeholder="Give your entry a title..." required>
+        
+        <label for="content"><b>Your Thoughts</b></label>
+        <textarea id="content" placeholder="Write your entry here..." required></textarea>
+        
+        <label for="media"><b>Attach an Image/Video (Optional)</b></label>
+        <input type="file" id="media" accept="image/*,video/*">
+        
+        <div class="action-buttons">
+            <button onclick="saveEntry()" class="btn-primary">
+                <i class="fas fa-save"></i> Save Entry
+            </button>
+            <button onclick="clearForm()" class="btn-secondary">
+                <i class="fas fa-eraser"></i> Clear
+            </button>
+        </div>
+    </div>
+
+    <div id="images-album" class="container hidden">
+        <h1><i class="fas fa-image"></i> Image Album</h1>
+        <div class="gallery" id="images-entries">
+            <div class="empty-state">
+                <i class="fas fa-images"></i>
+                <p>No images found</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="videos-album" class="container hidden">
+        <h1><i class="fas fa-video"></i> Video Album</h1>
+        <div class="gallery" id="videos-entries">
+            <div class="empty-state">
+                <i class="fas fa-video"></i>
+                <p>No videos found</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings" class="container hidden">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        
+        <div class="action-buttons">
+            <button onclick="exportData()" class="btn-primary">
+                <i class="fas fa-file-export"></i> Export Data
+            </button>
+            <button onclick="document.getElementById('import-file').click()" class="btn-secondary">
+                <i class="fas fa-file-import"></i> Import Data
+            </button>
+            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(this.files[0])">
+        </div>
+        
+        <div class="action-buttons">
+            <button onclick="clearAllEntries()" class="btn-danger">
+                <i class="fas fa-trash-alt"></i> Clear All Entries
+            </button>
+        </div>
+
+        <button onclick="logout()" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="enlarged-container">
+            <button class="close-btn" onclick="closeMedia()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="enlarged-header">
+                <h3 id="media-title"></h3>
+                <div class="enlarged-date" id="media-date"></div>
+            </div>
+            
+            <div class="enlarged-media-content">
+                <div id="enlarged-media"></div>
+            </div>
+            
+            <div class="enlarged-content">
+                <p id="media-content"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-bar">
+        <button id="home-btn" onclick="showSection('home')" class="active">
+            <i class="fas fa-home"></i> Home
+        </button>
+        <button id="images-btn" onclick="showSection('images-album')">
+            <i class="fas fa-image"></i> Images
+        </button>
+        <button id="videos-btn" onclick="showSection('videos-album')">
+            <i class="fas fa-video"></i> Videos
+        </button>
+        <button id="settings-btn" onclick="showSection('settings')">
+            <i class="fas fa-cog"></i> Settings
+        </button>
+    </div>
+
+    <script>
+        // Cloudinary configuration
+        const cloudinaryConfig = {
+            cloudName: 'dblwj0spl',
+            uploadPreset: 'Memories',
+            apiKey: '182387931493164'
+        };
+
+        // Database configuration
+        const DB_NAME = 'DiaryDB';
+        const DB_VERSION = 2;
+        const STORE_NAME = 'entries';
+        let db;
+
+        // Initialize the database
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        store.createIndex('mediaType', 'mediaType', { unique: false });
+                        store.createIndex('createdAt', 'createdAt', { unique: false });
+                    }
+                };
+                
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+                
+                request.onerror = (event) => {
+                    reject('Database error: ' + event.target.errorCode);
+                };
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
+                showToast("Cloudinary configuration missing", "error");
+                return;
+            }
+
+            try {
+                await initDB();
+                loadEntries();
+                showSection('home');
+                
+                // Display current date
+                const now = new Date();
+                document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                showToast("Failed to initialize app. Please refresh.", "error");
+            }
+        });
+
+        function showSection(section) {
+            const sections = document.querySelectorAll(".container");
+            sections.forEach(sec => {
+                sec.classList.remove("active-section");
+                sec.classList.add("hidden");
+            });
+            
+            const activeSection = document.getElementById(section);
+            setTimeout(() => {
+                activeSection.classList.remove("hidden");
+                activeSection.classList.add("active-section");
+            }, 100);
+            
+            document.querySelectorAll(".menu-bar button").forEach(btn => btn.classList.remove("active"));
+            
+            if (section === "home") {
+                document.getElementById("home-btn").classList.add("active");
+            } else if (section === "images-album") {
+                document.getElementById("images-btn").classList.add("active");
+                loadEntries();
+            } else if (section === "videos-album") {
+                document.getElementById("videos-btn").classList.add("active");
+                loadEntries();
+            } else if (section === "settings") {
+                document.getElementById("settings-btn").classList.add("active");
+            }
+        }
+        
+        function clearForm() {
+            if (confirm("Are you sure you want to clear the current entry?")) {
+                document.getElementById("title").value = "";
+                document.getElementById("content").value = "";
+                document.getElementById("media").value = "";
+            }
+        }
+
+        async function saveEntry() {
+            const loader = document.createElement('div');
+            loader.className = 'loading';
+            loader.innerHTML = '<div>Uploading...</div>';
+            document.body.appendChild(loader);
+
+            try {
+                const title = document.getElementById("title").value.trim();
+                const content = document.getElementById("content").value.trim();
+                const mediaInput = document.getElementById("media").files[0];
+                
+                if (!title || !content) {
+                    throw new Error("Please fill in both title and content fields");
+                }
+                
+                const entry = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    mediaUrl: '',
+                    mediaType: '',
+                    createdAt: new Date().toISOString()
+                };
+
+                if (mediaInput) {
+                    // Validate file size (10MB limit for images, 50MB for videos)
+                    const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+                    const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
+                    const isImage = mediaInput.type.startsWith('image');
+                    
+                    if ((isImage && mediaInput.size > MAX_IMAGE_SIZE) || 
+                        (!isImage && mediaInput.size > MAX_VIDEO_SIZE)) {
+                        throw new Error(`File is too large. Max ${isImage ? '10MB' : '50MB'} allowed`);
+                    }
+                    
+                    showToast("Uploading media...", "info");
+                    entry.mediaUrl = await uploadToCloudinary(mediaInput);
+                    entry.mediaType = mediaInput.type;
+                }
+
+                await saveEntryToDB(entry);
+                showToast("Entry saved successfully!");
+                
+                // Clear form
+                document.getElementById("title").value = "";
+                document.getElementById("content").value = "";
+                document.getElementById("media").value = "";
+                
+                loadEntries();
+            } catch (error) {
+                console.error("Save error:", error);
+                showToast(error.message, "error");
+            } finally {
+                document.body.removeChild(loader);
+            }
+        }
+
+        async function uploadToCloudinary(file) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+                formData.append('cloud_name', cloudinaryConfig.cloudName);
+
+                fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        reject(new Error(data.error.message));
+                    } else if (data.secure_url) {
+                        resolve(data.secure_url);
+                    } else {
+                        reject(new Error('Upload failed - no URL returned'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Cloudinary upload error:', error);
+                    reject(new Error('Failed to upload media'));
+                });
+            });
+        }
+
+        async function saveEntryToDB(entry) {
+            try {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                await new Promise((resolve, reject) => {
+                    const request = store.put(entry);
+                    
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (error) {
+                console.error('Database save error:', error);
+                throw new Error('Failed to save entry');
+            }
+        }
+        
+        async function loadEntries() {
+            try {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                const entries = await new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+                
+                renderEntries(entries);
+            } catch (error) {
+                console.error('Error loading entries:', error);
+                showToast("Error loading entries", "error");
+            }
+        }
+
+        function renderEntries(entries) {
+            const imagesContainer = document.getElementById("images-entries");
+            const videosContainer = document.getElementById("videos-entries");
+            
+            // Clear containers but keep empty state structure
+            imagesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-images"></i><p>No images found</p></div>';
+            videosContainer.innerHTML = '<div class="empty-state"><i class="fas fa-video"></i><p>No videos found</p></div>';
+            
+            // Filter entries with media
+            const imageEntries = entries.filter(entry => entry.mediaType && entry.mediaType.startsWith("image"));
+            const videoEntries = entries.filter(entry => entry.mediaType && entry.mediaType.startsWith("video"));
+            
+            if (imageEntries.length > 0) {
+                imagesContainer.innerHTML = '';
+                imageEntries.forEach(entry => createEntryElement(entry, imagesContainer));
+            }
+            
+            if (videoEntries.length > 0) {
+                videosContainer.innerHTML = '';
+                videoEntries.forEach(entry => createEntryElement(entry, videosContainer));
+            }
+        }
+        
+        function createEntryElement(entry, container) {
+            const entryDiv = document.createElement("div");
+            entryDiv.classList.add("entry");
+            
+            const date = new Date(entry.createdAt);
+            const formattedDate = date.toLocaleDateString();
+            
+            // Transform Cloudinary URL for images
+            const mediaUrl = entry.mediaType.startsWith("image") 
+                ? entry.mediaUrl.replace('/upload/', '/upload/w_300,h_300,c_fill/')
+                : entry.mediaUrl;
+            
+            entryDiv.innerHTML = `
+                <p class="entry-title">${entry.title}</p>
+                <${entry.mediaType.startsWith("image") ? "img" : "video"} 
+                    src="${mediaUrl}" 
+                    onclick='expandMedia(${JSON.stringify(entry.id)})'
+                    ${entry.mediaType.startsWith("video") ? 'poster="" controls' : ''}
+                    class="media-thumbnail"
+                ></${entry.mediaType.startsWith("image") ? "img" : "video"}>
+                <button class="delete-btn" onclick="deleteEntry(${entry.id}, event)">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <div class="date-display">${formattedDate}</div>
+            `;
+            
+            container.appendChild(entryDiv);
+        }
+        
+        async function expandMedia(entryId) {
+            try {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                const entry = await new Promise((resolve, reject) => {
+                    const request = store.get(entryId);
+                    
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+                
+                if (!entry) {
+                    throw new Error('Entry not found');
+                }
+                
+                document.getElementById("media-title").textContent = entry.title;
+                document.getElementById("media-content").textContent = entry.content;
+                
+                // Format date for display
+                const date = new Date(entry.createdAt);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById("media-date").textContent = formattedDate;
+                
+                const mediaContainer = document.getElementById("enlarged-media");
+                mediaContainer.innerHTML = '';
+                
+                if (entry.mediaUrl) {
+                    const isVideo = entry.mediaType.startsWith("video");
+                    const mediaElement = document.createElement(isVideo ? "video" : "img");
+                    
+                    mediaElement.src = entry.mediaUrl;
+                    mediaElement.classList.add("enlarged-media");
+                    
+                    if (isVideo) {
+                        mediaElement.classList.add("video-element");
+                        mediaElement.controls = true;
+                        mediaElement.autoplay = true;
+                    }
+                    
+                    mediaContainer.appendChild(mediaElement);
+                }
+                
+                document.getElementById("overlay").style.display = "flex";
+            } catch (error) {
+                console.error('Error expanding media:', error);
+                showToast("Error loading entry", "error");
+            }
+        }
+        
+        async function deleteEntry(entryId, event) {
+            if (event) event.stopPropagation();
+            
+            if (confirm("Are you sure you want to delete this entry?")) {
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    
+                    await new Promise((resolve, reject) => {
+                        const request = store.delete(entryId);
+                        
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    loadEntries();
+                    closeMedia();
+                    showToast("Entry deleted successfully");
+                } catch (error) {
+                    console.error('Error deleting entry:', error);
+                    showToast("Error deleting entry", "error");
+                }
+            }
+        }
+        
+        async function clearAllEntries() {
+            if (confirm("Are you sure you want to delete ALL entries? This cannot be undone.")) {
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    
+                    await new Promise((resolve, reject) => {
+                        const request = store.clear();
+                        
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    loadEntries();
+                    showToast("All entries deleted", "warning");
+                } catch (error) {
+                    console.error('Error clearing entries:', error);
+                    showToast("Error clearing entries", "error");
+                }
+            }
+        }
+
+        function closeMedia() {
+            document.getElementById("overlay").style.display = "none";
+            // Pause any playing videos when closing
+            const videos = document.querySelectorAll("#enlarged-media video");
+            videos.forEach(video => {
+                video.pause();
+                video.currentTime = 0;
+            });
+        }
+
+        async function exportData() {
+            try {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                const entries = await new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+                
+                if (entries.length === 0) {
+                    showToast("No entries to export", "warning");
+                    return;
+                }
+                
+                const dataStr = JSON.stringify(entries, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportName = 'diary-backup-' + new Date().toISOString().slice(0,10) + '.json';
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportName);
+                linkElement.click();
+                
+                showToast(`Exported ${entries.length} entries`);
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showToast("Error exporting data", "error");
+            }
+        }
+
+        async function importData(file) {
+            if (!file) return;
+            
+            if (!confirm("Importing data will overwrite your current entries. Continue?")) {
+                return;
+            }
+            
+            const loader = document.createElement('div');
+            loader.className = 'loading';
+            loader.innerHTML = '<div>Importing data...</div>';
+            document.body.appendChild(loader);
+
+            try {
+                const entries = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(JSON.parse(e.target.result));
+                    reader.onerror = () => reject(new Error('Error reading file'));
+                    reader.readAsText(file);
+                });
+
+                if (!Array.isArray(entries)) {
+                    throw new Error('Invalid file format - expected an array of entries');
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                // Clear existing data first
+                await new Promise((resolve, reject) => {
+                    const clearRequest = store.clear();
+                    clearRequest.onsuccess = () => resolve();
+                    clearRequest.onerror = () => reject(clearRequest.error);
+                });
+                
+                // Add all imported entries
+                for (const entry of entries) {
+                    await new Promise((resolve, reject) => {
+                        const addRequest = store.put(entry);
+                        addRequest.onsuccess = () => resolve();
+                        addRequest.onerror = () => reject(addRequest.error);
+                    });
+                }
+                
+                showToast(`Successfully imported ${entries.length} entries`);
+                loadEntries();
+            } catch (error) {
+                console.error('Error importing data:', error);
+                showToast("Error importing data: " + error.message, "error");
+            } finally {
+                document.body.removeChild(loader);
+            }
+        }
+
+        function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                localStorage.removeItem('diaryUserName');
+                window.location.href = "welcome.html";
+            }
+        }
+        
+        function showToast(message, type = "success", duration = 3000) {
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.style.maxWidth = "80%";
+            toast.style.wordBreak = "break-word";
+            toast.style.padding = "15px 20px";
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add("show");
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, duration);
+        }
+        
+        // Add toast styles dynamically
+        const toastStyles = document.createElement("style");
+        toastStyles.textContent = `
+            .toast {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #333;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                z-index: 1001;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .toast.show {
+                opacity: 1;
+            }
+            
+            .toast-success {
+                background-color: #28a745;
+            }
+            
+            .toast-error {
+                background-color: #dc3545;
+            }
+            
+            .toast-warning {
+                background-color: #ffc107;
+                color: #333;
+            }
+        `;
+        document.head.appendChild(toastStyles);
+    </script>
+</body>
+</html>
